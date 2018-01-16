@@ -63,10 +63,12 @@ class Knight:
         param = self.param
         other = self.call_history.get(param)
         if other is not None:
+            print(f"Current param: {param}, getting existing result: {other}")
             return other
         else:
             searcher = searcher_factory(self.n,param)()
             result = searcher.search()
+            self.call_history[param] = result
             return result
 
 def knight_factory(n):
