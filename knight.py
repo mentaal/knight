@@ -2,9 +2,11 @@ import logging
 logger = logging.getLogger()
 
 class Searcher:
+    instance_count = 0
     def __init__(self,a=0,b=0,move_count=0):
         self.coord = (a,b) if a<b else (b,a)
         self.move_count = move_count
+        Searcher.instance_count += 1
         logger.debug("new coord: %s, move_count: %d", str(self.coord), move_count)
 
     def search(self):
@@ -13,19 +15,25 @@ class Searcher:
         x,y = self.param
         move_count = self.move_count
         max_moves = self.max_moves
+        other = self.move_history.get(coord)
+        if other is not None and other < move_count:
+            logger.debug("Got to coord: %s in %d but it has already been reached in %d so killing this path", str(coord), move_count, other)
+            return -1
+        self.move_history[coord] = move_count
         for o in coord:
             if not 0 <= o < self.n:
                 logger.debug("Coord: %s is out of bounds", str(coord))
                 return -1
-        other = self.move_history.get(coord, -1)
-        if 0 < other < move_count:
-            logger.debug("Got to coord: %s in %d but it has already been reached in %d so killing this path", str(coord), move_count, other)
-            return -1
-        self.move_history[coord] = move_count
         if move_count >= max_moves:
             logger.debug("Exceeded max move count for coord: %s", str(coord))
             return -1
-        if (a,b) == (self.n-1,self.n-1):
+        if move_count >= self.best:
+            logger.debug("%d Exceeds current best: %d so cancelling: ", move_count, self.best)
+            return -1
+
+        if coord == (self.n-1,self.n-1):
+            logger.debug("Setting best for: %s to %d", str(coord), self.move_count)
+            self.__class__.best = self.move_count
             logger.debug("Found end in %d moves", move_count)
             return move_count
 
@@ -42,9 +50,12 @@ class Searcher:
                        (a - x, b - y),
                        (a - y, b - x)]
 
+        good_range = range(0,self.n)
+        new_coords_filtered = (c for c in new_coords if c[0] in good_range and c[1] in good_range)
+
 
         results_gen = (self.__class__(a,b,new_move_count).search()
-                            for (a,b) in new_coords)
+                            for (a,b) in new_coords_filtered)
         filtered = [r for r in results_gen if r > 0]
         if len(filtered) > 0:
             return min(filtered)
@@ -56,6 +67,7 @@ def searcher_factory(n,param):
     S.move_history = {}
     S.n = n
     S.max_moves = n*n-1
+    S.best = S.max_moves+1
     S.param = param
     return S
 
