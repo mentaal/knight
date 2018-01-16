@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger()
 class Searcher:
     def __init__(self,a=0,b=0,move_count=0):
         self.coord = (a,b) if a<b else (b,a)
@@ -13,7 +15,7 @@ class Searcher:
             if not 0 <= o < self.n:
                 return -1
         other = self.move_history.get(coord, -1)
-        if 0 < other < max_moves:
+        if 0 < other < move_count:
             return -1
         self.move_history[coord] = move_count
         if move_count >= max_moves:

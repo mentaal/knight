@@ -1,6 +1,7 @@
-from knight import print_results
+from knight import print_results, knight_factory
 def test_print_results(request):
     n = request.config.getoption("--board_size")
+    print(f"n: {n} type(n): {type(n)}")
     print(f"{80*'*'}\nNow on n = {n}\n{80*'*'}\n")
     print_results(n)
 
@@ -30,3 +31,9 @@ def test_6(capsys):
     print("Output:")
     print(captured.out)
     assert expected_6 == captured.out
+
+def test_6_1_2():
+    K = knight_factory(6)
+    result = K(1,2).search()
+    print(f"Result for K(1,2) is: {result}")
+    assert result == 4
