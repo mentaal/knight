@@ -39,3 +39,15 @@ def test_6_1_2():
     print(f"Result for K(1,2) is: {result}")
     assert result == 4
     print(f"Instance count: {Searcher.instance_count}")
+
+
+def test_param(request):
+    n = request.config.getoption("--board_size")
+    param = request.config.getoption("--param")
+    print(f"n: {n} type(n): {type(n)}")
+    print(f"{80*'*'}\nNow on n = {n}, param=({param[0]},{param[1]})\n{80*'*'}\n")
+    K = knight_factory(n)
+    result = K(*param).search()
+    print(f"Result: {result}")
+    print(f"Instance count: {Searcher.instance_count}")
+
