@@ -15,7 +15,6 @@ class Node:
                 self.move_count)
 
 class Crawler:
-    move_history = {}
 
     def __init__(self, param ,n):
         x,y = param
@@ -24,16 +23,17 @@ class Crawler:
                 (y, +x),
                 (x, -y),
                 (y, -x),
-                (x, +y),
-                (y, +x),
-                (x, -y),
-                (y, -x))
+                (-x, +y),
+                (-y, +x),
+                (-x, -y),
+                (-y, -x))
         self.param = param
         logger.debug("Using crawler with n set to: %d", n)
         self.n = n
         self.end = (n-1,n-1)
         self.max_moves = n*n
         self.best = self.max_moves
+        self.move_history = {}
 
 
     def next_move(self, node):
@@ -41,7 +41,7 @@ class Crawler:
         logger.debug("In next move, with %s as node arg...", node)
         a,b = node.coord
         n = self.n
-        new_moves_gen = ((a+x, b+y) for (x,y) in self.moves)
+        new_moves_gen = [(a+x, b+y) for (x,y) in self.moves]
         new_moves_filtered = set((a,b) if a<b else (b,a) for (a,b) in new_moves_gen
                                     if (0 <= a < n) and (0 <= b < n))
         logger.debug("New moves: %s", new_moves_filtered)
@@ -74,7 +74,8 @@ class Crawler:
                 previous = n.previous
                 if previous is None:
                     logger.debug("Finished searching. Returning best result: %d", self.best)
-                    return self.best # we're done
+                    best = self.best
+                    return -1 if best == max_moves else best # we're done
                 n = previous
             elif n.coord == self.end:
                 count = n.move_count
@@ -91,12 +92,13 @@ class Crawler:
                 n = new_node
 
 def print_results(n):
-    arg_history = {}
+    arg_history = {(1,1):n-1}
     r = range(1,n)
 
     for i in r:
         line_results = []
         for j in r:
+            logger.debug("Now getting result for param: (%d,%d)", i,j)
             coord = (i,j) if i<j else (j,i)
             result = arg_history.get(coord)
             if result is None:
